@@ -13,6 +13,7 @@ let mediaStream = null;
 let socket = null;
 let captureTimer = null;
 let sessionId = null;
+const violationListenerCleanups = [];
 
 function appendAlert(text) {
   const item = document.createElement("li");
@@ -57,6 +58,45 @@ function setRunningUI(isRunning) {
   reportBtn.disabled = isRunning || !sessionId;
 }
 
+function sendClientViolation(code, message, severity = 4) {
+  if (!socket || socket.readyState !== WebSocket.OPEN) return;
+  socket.send(JSON.stringify({ type: "client_event", code, message, severity }));
+}
+
+function setupViolationListeners() {
+  const onVisibility = () => {
+    if (document.hidden) {
+      sendClientViolation("TAB_HIDDEN", "Candidate switched away from exam tab.", 5);
+    }
+  };
+  const onBlur = () =>
+    sendClientViolation("WINDOW_BLUR", "Exam window lost focus.", 4);
+  const onFullscreen = () => {
+    if (!document.fullscreenElement) {
+      sendClientViolation("FULLSCREEN_EXIT", "Candidate exited fullscreen mode.", 4);
+    }
+  };
+
+  document.addEventListener("visibilitychange", onVisibility);
+  window.addEventListener("blur", onBlur);
+  document.addEventListener("fullscreenchange", onFullscreen);
+
+  violationListenerCleanups.push(() =>
+    document.removeEventListener("visibilitychange", onVisibility)
+  );
+  violationListenerCleanups.push(() => window.removeEventListener("blur", onBlur));
+  violationListenerCleanups.push(() =>
+    document.removeEventListener("fullscreenchange", onFullscreen)
+  );
+}
+
+function teardownViolationListeners() {
+  while (violationListenerCleanups.length > 0) {
+    const cleanup = violationListenerCleanups.pop();
+    cleanup();
+  }
+}
+
 startBtn.addEventListener("click", async () => {
   alertsEl.innerHTML = "";
   framesEl.textContent = "0";
@@ -86,6 +126,7 @@ startBtn.addEventListener("click", async () => {
     socket.onclose = () => {
       clearInterval(captureTimer);
       captureTimer = null;
+      teardownViolationListeners();
       setRunningUI(false);
     };
 
@@ -96,6 +137,7 @@ startBtn.addEventListener("click", async () => {
       socket.send(JSON.stringify({ frame: frameToBase64() }));
     }, 1000);
 
+    setupViolationListeners();
     setRunningUI(true);
   } catch (err) {
     appendAlert(`Startup failed: ${err.message}`);
@@ -111,6 +153,7 @@ stopBtn.addEventListener("click", () => {
   if (socket && socket.readyState === WebSocket.OPEN) {
     socket.close();
   }
+  teardownViolationListeners();
   stopCamera();
   setRunningUI(false);
   reportBtn.disabled = !sessionId;

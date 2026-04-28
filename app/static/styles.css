@@ -20,6 +20,7 @@ h2 {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1rem;
+  align-items: center;
 }
 
 button {
@@ -57,4 +58,27 @@ video {
 
 #alerts li {
   margin-bottom: 0.35rem;
+}
+
+.admin-link {
+  color: #8fc7ff;
+  text-decoration: none;
+  margin-left: 0.5rem;
+}
+
+.admin-link:hover {
+  text-decoration: underline;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+th,
+td {
+  border: 1px solid #263869;
+  padding: 0.55rem;
+  text-align: left;
 }

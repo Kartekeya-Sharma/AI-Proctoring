@@ -3,3 +3,5 @@ uvicorn[standard]
 opencv-python
 numpy
 python-multipart
+sqlalchemy
+psycopg[binary]
