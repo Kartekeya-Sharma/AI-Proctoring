@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Proctoring MVP</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main>
+      <h1>AI Proctoring MVP</h1>
+      <div class="controls">
+        <button id="startBtn">Start Session</button>
+        <button id="stopBtn" disabled>Stop Session</button>
+        <button id="reportBtn" disabled>Fetch Report</button>
+      </div>
+
+      <div class="status-grid">
+        <div><strong>Session:</strong> <span id="sessionId">-</span></div>
+        <div><strong>Frames:</strong> <span id="frames">0</span></div>
+        <div><strong>Risk Score:</strong> <span id="risk">0</span></div>
+      </div>
+
+      <video id="camera" autoplay playsinline muted></video>
+      <canvas id="snapshotCanvas" width="640" height="480" hidden></canvas>
+
+      <h2>Live Alerts</h2>
+      <ul id="alerts"></ul>
+    </main>
+    <script src="/static/main.js"></script>
+  </body>
+  </html>
